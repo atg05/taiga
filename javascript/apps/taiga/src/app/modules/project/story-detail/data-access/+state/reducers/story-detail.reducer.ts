@@ -459,6 +459,13 @@ export const reducer = createImmerReducer(
       return state;
     }
   ),
+  on(StoryDetailActions.deleteAttachment, (state, { id }): StoryDetailState => {
+    state.attachments = state.attachments.filter((it) => {
+      return it.id !== id;
+    });
+
+    return state;
+  }),
   on(
     projectEventActions.newAttachment,
     (state, { attachment, storyRef }): StoryDetailState => {

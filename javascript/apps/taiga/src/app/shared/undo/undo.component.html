@@ -1,0 +1,46 @@
+<div
+  class="content"
+  [@undoSteps]="state()">
+  <ng-content></ng-content>
+</div>
+
+<div
+  *ngIf="state() === 'waitUndo'"
+  @showUndo
+  class="countdown">
+  <tg-ui-context-notification
+    size="s"
+    alertLevel="none"
+    status="info">
+    <div
+      class="remove-countdown-wrapper"
+      data-test="remove-countdown">
+      <span>{{ msg }}</span>
+      <button
+        (click)="undo()"
+        class="undo-remove"
+        data-test="undo-remove"
+        tuiLink
+        type="button"
+        appearance="tertiary">
+        <span>{{ msgActionUndo }}</span>
+      </button>
+    </div>
+  </tg-ui-context-notification>
+</div>
+
+<div
+  *ngIf="state() === 'undone'"
+  @undoDone
+  class="remove-action-undo-done">
+  <tg-ui-context-notification
+    size="s"
+    alertLevel="none"
+    status="info">
+    <div
+      class="remove-countdown-wrapper"
+      data-test="remove-undone">
+      <span>{{ msgActionUndon }}</span>
+    </div>
+  </tg-ui-context-notification>
+</div>

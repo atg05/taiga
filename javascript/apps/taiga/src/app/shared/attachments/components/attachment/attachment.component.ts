@@ -6,7 +6,7 @@
  * Copyright (c) 2023-present Kaleidos INC
  */
 
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Attachment, LoadingAttachment } from '@taiga/data';
 import { DynamicTableModule } from '@taiga/ui/dynamic-table/dynamic-table.module';
@@ -16,6 +16,12 @@ import { TranslocoModule } from '@ngneat/transloco';
 import { TransformSizePipe } from '~/app/shared/pipes/transform-size/transform-size.pipe';
 import { DateDistancePipe } from '~/app/shared/pipes/date-distance/date-distance.pipe';
 import { ProgressBarComponent } from '@taiga/ui/progress-bar';
+import { AttachmentsState } from '~/app/shared/attachments/attachments.state';
+import { ContextNotificationModule } from '@taiga/ui/context-notification/context-notification.module';
+import { showUndo, undoDone } from '~/app/shared/utils/animations';
+import { UndoComponent } from '~/app/shared/undo/undo.component';
+import { Subject } from 'rxjs';
+
 @Component({
   selector: 'tg-attachment',
   standalone: true,
@@ -29,9 +35,12 @@ import { ProgressBarComponent } from '@taiga/ui/progress-bar';
     DateDistancePipe,
     TuiSvgModule,
     ProgressBarComponent,
+    ContextNotificationModule,
+    UndoComponent,
   ],
   templateUrl: './attachment.component.html',
   styleUrls: ['./attachment.component.css'],
+  animations: [showUndo, undoDone],
 })
 export class AttachmentComponent implements OnChanges {
   @Input({ required: true })
@@ -41,6 +50,10 @@ export class AttachmentComponent implements OnChanges {
   public canEdit = true;
 
   public extension = 'paperclip';
+  public state = inject(AttachmentsState);
+  public undo = signal(false);
+  #initUndo$ = new Subject<void>();
+  public initUndo$ = this.#initUndo$.asObservable();
 
   public calculateExtension() {
     if (this.attachment.contentType.startsWith('image')) {
@@ -88,6 +101,16 @@ export class AttachmentComponent implements OnChanges {
   ): attachment is LoadingAttachment => {
     return 'progress' in attachment;
   };
+
+  public deleteAttachment(id: Attachment['id']) {
+    // setTimeout(() => {
+    //   this.undo.set(false);
+    //   this.state.deleteAttachment$.next(id);
+    // }, 5000);
+
+    // this.undo.set(true);
+    this.#initUndo$.next();
+  }
 
   public ngOnChanges() {
     this.calculateExtension();

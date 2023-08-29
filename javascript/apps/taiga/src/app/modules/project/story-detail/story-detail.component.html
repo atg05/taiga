@@ -285,7 +285,10 @@ Copyright (c) 2023-present Kaleidos INC
                       vm.selectedStoryView === 'side-view' ? 5 : 9
                     "
                     [canEdit]="vm.canEdit"
-                    (uploadFiles)="onUploadFiles($event)"></tg-attachments>
+                    (uploadFiles)="onUploadFiles($event)"
+                    (deleteAttachment)="
+                      onDeleteAttachment($event)
+                    "></tg-attachments>
 
                   <tg-comments
                     [comments]="vm.comments"
