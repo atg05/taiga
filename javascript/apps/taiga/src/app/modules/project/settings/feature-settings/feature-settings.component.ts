@@ -48,6 +48,23 @@ export class ProjectsSettingsFeatureSettingsComponent {
       this.store.select(selectCurrentProject).pipe(filterNil())
     );
 
+    this.state.hold(this.state.select('project'), (project) => {
+      if (project) {
+        const url = window.location.href;
+
+        if (url.includes(project.id + '/settings')) {
+          void this.router.navigate(
+            [
+              `project/${project.id}/${project.slug}/settings/${
+                url.includes('/settings/members') ? 'members' : 'permissions'
+              }`,
+            ],
+            { replaceUrl: true }
+          );
+        }
+      }
+    });
+
     this.actions$
       .pipe(ofType(ProjectActions.fetchProjectSuccess), untilDestroyed(this))
       .subscribe((action) => {

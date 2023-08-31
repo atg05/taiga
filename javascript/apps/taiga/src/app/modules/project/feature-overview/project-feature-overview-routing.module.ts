@@ -11,7 +11,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { ProjectFeatureOverviewComponent } from './project-feature-overview.component';
 
 const routes: Routes = [
-  { path: '', component: ProjectFeatureOverviewComponent },
+  { path: '/overview', component: ProjectFeatureOverviewComponent },
 ];
 
 @NgModule({

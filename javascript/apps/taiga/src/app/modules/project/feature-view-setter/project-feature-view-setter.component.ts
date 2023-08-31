@@ -29,7 +29,8 @@ import { ProjectFeatureStoryWrapperFullViewModule } from '../feature-story-wrapp
 import { filterFalsy, filterNil } from '~/app/shared/utils/operators';
 import { Router } from '@angular/router';
 import { RxState } from '@rx-angular/state';
-import { StoryDetail, StoryView } from '@taiga/data';
+import { StoryDetail, StoryView, Project } from '@taiga/data';
+import { selectCurrentProject } from '~/app/modules/project/data-access/+state/selectors/project.selectors';
 
 interface ProjectFeatureViewSetterComponentState {
   storyView: StoryView;
@@ -37,6 +38,7 @@ interface ProjectFeatureViewSetterComponentState {
   isKanban: boolean;
   kanbanHost: ViewContainerRef | undefined;
   url: string;
+  project: Project;
 }
 
 @UntilDestroy()
@@ -70,6 +72,10 @@ export class ProjectFeatureViewSetterComponent implements OnDestroy {
     this.state.connect('storyView', this.store.select(selectStoryView));
     this.state.connect('selectStory', this.store.select(selectStory));
     this.state.connect(
+      'project',
+      this.store.select(selectCurrentProject).pipe(filterNil())
+    );
+    this.state.connect(
       'url',
       this.routerHistory.urlChanged.pipe(
         untilDestroyed(this),
@@ -78,6 +84,31 @@ export class ProjectFeatureViewSetterComponent implements OnDestroy {
         distinctUntilChanged()
       )
     );
+
+    this.state.hold(this.state.select('project'), (project) => {
+      if (project) {
+        const url = window.location.href;
+
+        if (url.includes(project.id + '/stories')) {
+          const params = this.getUrlParams();
+          void this.router.navigate(
+            [
+              `project/${project.id}/${project.slug}/stories/${params.storyRef}`,
+            ],
+            { replaceUrl: true }
+          );
+        } else if (
+          url.includes(project.id + '/kanban') &&
+          !url.includes('/overview')
+        ) {
+          void this.router.navigate(
+            [`project/${project.id}/${project.slug}/kanban`],
+            { replaceUrl: true }
+          );
+        }
+      }
+    });
+
     this.state.connect(
       'isKanban',
       this.state.select('url').pipe(map((url) => url.includes('kanban')))
