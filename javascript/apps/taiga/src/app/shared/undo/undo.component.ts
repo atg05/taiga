@@ -3,7 +3,9 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  HostListener,
   Input,
+  OnDestroy,
   OnInit,
   Output,
   inject,
@@ -113,7 +115,7 @@ import { TranslocoService } from '@ngneat/transloco';
     ]),
   ],
 })
-export class UndoComponent implements OnInit {
+export class UndoComponent implements OnInit, OnDestroy {
   private t = inject(TranslocoService);
   private takeUntilDestroyed = takeUntilDestroyed();
 
@@ -132,9 +134,17 @@ export class UndoComponent implements OnInit {
   @Output()
   public confirm = new EventEmitter<void>();
 
+  @HostListener('window:beforeunload')
+  public beforeUnload() {
+    if (this.state() === 'waitUndo') {
+      this.confirm.next();
+    }
+  }
+
   public state = signal('none');
   public el = inject<ElementRef<HTMLElement>>(ElementRef);
   public confirmTimeout: ReturnType<typeof setTimeout> | null = null;
+  public undoneTimeout: ReturnType<typeof setTimeout> | null = null;
 
   public undo() {
     if (this.confirmTimeout) {
@@ -143,7 +153,7 @@ export class UndoComponent implements OnInit {
 
     this.state.set('undone');
 
-    setTimeout(() => {
+    this.undoneTimeout = setTimeout(() => {
       this.state.set('none');
       this.confirm.emit();
     }, 4000);
@@ -162,5 +172,11 @@ export class UndoComponent implements OnInit {
         this.state.set('none');
       }, 5000);
     });
+  }
+
+  public ngOnDestroy() {
+    if (this.undoneTimeout) {
+      clearTimeout(this.undoneTimeout);
+    }
   }
 }
