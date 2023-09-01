@@ -29,6 +29,13 @@ Copyright (c) 2023-present Kaleidos INC
         </tg-ui-error>
       </ng-container>
     </tg-ui-input>
+    <tg-ui-inline-notification
+      status="warning"
+      *ngIf="fullNameOnlyEmojis">
+      <p>
+        {{ t('signup.warnings.only_emojis') }}
+      </p>
+    </tg-ui-inline-notification>
 
     <tg-ui-input
       class="input-email"
